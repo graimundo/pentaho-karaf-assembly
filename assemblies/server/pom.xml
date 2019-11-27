@@ -110,7 +110,124 @@
       <classifier>features</classifier>
       <type>xml</type>
     </dependency>
+      <dependency>
+        <groupId>net.sf.saxon</groupId>
+        <artifactId>saxon</artifactId>
+        <version>9.1.0.8</version>
+      </dependency>
   </dependencies>
+
+  <profiles>
+
+    <profile>
+      <id>merge-features-processing</id>
+      <activation>
+        <file><exists>src/bla/org.apache.karaf.features.xml</exists></file>
+      </activation>
+
+      <properties>
+        <features-processing-folder>${project.basedir}/src/bla</features-processing-folder>
+        <!-- The value of this property should be the same as the file that activates the profile. -->
+        <features-processing-file>${features-processing-folder}/org.apache.karaf.features.xml</features-processing-file>
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.hitachivantara.karaf</groupId>
+          <artifactId>build-help</artifactId>
+          <version>${project.version}</version>
+          <type>xsl</type>
+        </dependency>
+      </dependencies>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>extract-transform-xsl</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeTypes>xsl</includeTypes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <!-- First filter the processing file for versions and other properties -->
+                <!-- TODO: CHECK This isn't working and needs revisiting. -->
+                <id>filter-features-processing-file</id>
+                <goals>
+                  <goal>add-resource</goal>
+                </goals>
+                <configuration>
+                  <resources>
+                    <resource>
+                      <directory>${project.basedir}/src/bla</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <version>1.0.2</version>
+            <executions>
+              <execution>
+                <id>process-xml</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+                <configuration>
+                  <transformerFactory>net.sf.saxon.TransformerFactoryImpl</transformerFactory>
+                  <transformationSets>
+                    <transformationSet>
+                      <stylesheet>${project.build.directory}/dependency/build-help-9.0.0.0-SNAPSHOT.xsl</stylesheet>
+                      <dir>${project.build.outputDirectory}/etc</dir>
+                      <outputDir>${project.build.outputDirectory}/etc</outputDir>
+                      <includes>
+                        <include>org.apache.karaf.features.xml</include>
+                      </includes>
+                      <parameters>
+                        <parameter>
+                          <name>sourceFilePath</name>
+                          <value>${features-processing-file}</value>
+                        </parameter>
+                      </parameters>
+                    </transformationSet>
+                  </transformationSets>
+                </configuration>
+
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>saxon</artifactId>
+                <version>9.1.0.8</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+
+      </build>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>
@@ -118,7 +235,6 @@
        phase of the maven build pipeline -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven-dependency-plugin.version}</version>
         <executions>
           <execution>
             <id>unpack</id>

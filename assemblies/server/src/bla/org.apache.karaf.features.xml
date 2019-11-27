@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<featuresProcessing xmlns="http://karaf.apache.org/xmlns/features-processing/v1.0.0"
+                    xmlns:f="http://karaf.apache.org/xmlns/features/v1.6.0">
+
+    <blacklistedRepositories>
+      <!-- comments test -->
+      <repository>mvn:org.ops4j.pax.web/pax-web-features/7.2.10/xml/features</repository>
+    </blacklistedRepositories>
+
+    <featureReplacements>
+       <!-- The Pentaho Server has its own web application container, so the Http Service is provided by the
+            Felix HTTP Bridge implementation. For full compatibility we must also use Felix's implementation of the
+            Http Whiteboard Specification.
+            A series of overrides are made to prevent pax-http-service (which brings on Jetty) and pax-http-whiteboard
+            from being installed. -->
+        <replacement>
+            <feature name="http" description="Implementation of the OSGI HTTP Service" version="333" >
+                <f:feature dependency="true">felix-bridge</f:feature>
+                <f:requirement>http-service</f:requirement>
+            </feature>
+        </replacement>
+
+        <replacement>
+            <feature name="http-whiteboard" description="Provide HTTP Whiteboard pattern support" version="333">
+                <f:feature>http</f:feature>
+                <f:bundle start-level="30">mvn:org.apache.felix/org.apache.felix.http.whiteboard/4.0.0</f:bundle>
+            </feature>
+        </replacement>
+
+        <replacement>
+            <feature name="war" description="Turn Karaf as a full WebContainer" version="333">
+                <f:feature>http</f:feature>
+            </feature>
+        </replacement>
+
+        <replacement>
+            <feature name="pax-http"/>
+        </replacement>
+
+        <replacement>
+            <feature name="pax-http-whiteboard"></feature>
+        </replacement>
+
+        <replacement>
+            <feature name="pax-war"></feature>
+        </replacement>
+
+  </featureReplacements>
+
+</featuresProcessing>

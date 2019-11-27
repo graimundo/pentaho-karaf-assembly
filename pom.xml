@@ -20,6 +20,7 @@
     <module>pentaho-osgi-config</module>
     <module>assemblies</module>
     <module>overrides</module>
+    <module>build-help</module>
   </modules>
 
   <properties>
